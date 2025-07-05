@@ -59,6 +59,36 @@
         #hoaDon, #hoaDon * { visibility: visible; }
         #hoaDon { position: absolute; top: 0; left: 0; width: 100%; }
     }
+
+#inTatCaButton {
+    padding: 12px 24px;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+#inTatCaButton:hover {
+    background-color: #1976D2;
+}
+
+
+#themButton {
+    padding: 12px 24px;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #64B5F6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+#themButton:hover {
+    background-color: #42A5F5;
+}
+
 </style>
 </head>
 <body>
@@ -89,12 +119,19 @@
   <input id="tenKH" readonly/>
 </div>
 
-<button onclick="themVaoDanhSach()">➕ Thêm vào danh sách</button>
+
+
+<div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+  <button id="themButton" onclick="themVaoDanhSach()">➕ Thêm vào danh sách</button>
+  <button id="inTatCaButton" onclick="inTatCaHoaDon()">🖨️ In tất cả</button>
+</div>
+
+
 
 <h3>Danh sách hóa đơn đã chọn</h3>
 <ul id="danhSachHoaDon" style="padding-left: 20px;"></ul>
 <p><strong>Tổng tiền tất cả hóa đơn: <span id="tongTienTatCa">0 ₫</span></strong></p>
-<button onclick="inTatCaHoaDon()">🖨️ In tất cả</button>
+
 
 <div style="display:flex; gap:10px; align-items:flex-start; margin-top:10px;">
   <div style="flex:1;">
@@ -243,10 +280,17 @@ function inTatCaHoaDon() {
   localStorage.setItem("lichSuThu", JSON.stringify(lichSuThu));
   capNhatLichSu();
 
-  const printWindow = window.open('', '', 'width=800,height=600');
-  printWindow.document.write(`<html><head><title>In hóa đơn</title></head><body>${html}</body></html>`);
-  printWindow.document.close();
-  printWindow.print();
+  const printArea = document.createElement("div");
+  printArea.innerHTML = html;
+  printArea.style.display = "none";  // tránh hiển thị ra giao diện chính
+
+  document.body.appendChild(printArea);
+
+  const originalContent = document.body.innerHTML;
+  document.body.innerHTML = printArea.innerHTML;
+  window.print();
+  document.body.innerHTML = originalContent;
+  location.reload(); // tải lại trang sau khi in xong để khôi phục lại UI
 }
 
 function capNhatLichSu() {
