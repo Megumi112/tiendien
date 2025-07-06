@@ -1,115 +1,60 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="utf-8"/>
-<title>Thu tiền điện</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
+  <meta charset="utf-8"/>
+  <title>Thu tiền điện</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; max-width: 800px; margin:auto; padding:20px; border-radius:10px; }
     input, button, textarea { margin: 5px; padding: 5px; font-size: 14px; }
-    .input-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-    .input-group label {
-        width: 150px;
-        font-weight: bold;
-    }
-    .input-group input {
-        flex: 1;
-    }
+    .input-group { display: flex; align-items: center; margin-bottom: 10px; }
+    .input-group label { width: 150px; font-weight: bold; }
+    .input-group input { flex: 1; }
     #hoaDon {
-        width: 400px;
-        min-height: 250px;
-        border: 2px solid black;
-        padding: 15px;
-        white-space: normal;
-        font-size: 18px;
-        font-family: 'Times New Roman', serif;
-        line-height: 1.2;
+      width: 400px; min-height: 250px; border: 2px solid black;
+      padding: 15px; white-space: normal; font-size: 18px;
+      font-family: 'Times New Roman', serif; line-height: 1.2;
     }
     #hoaDon p { margin: 0; }
-    #lichSuIn {
-        width: 100%;
-        height: 120px;
-        font-size: 14px;
-        white-space: nowrap;
-        overflow-x: auto;
+    #lichSuIn, #lichSuThu {
+      width: 100%; height: 120px; font-size: 14px;
+      white-space: nowrap; overflow-x: auto;
     }
-    #lichSuThu {
-        width: 250px;
-        height: 150px;
+    #inButton, #inTatCaButton, #themButton {
+      padding: 12px 24px; font-size: 18px; font-weight: bold;
+      border: none; border-radius: 6px; cursor: pointer;
+      color: white;
     }
-    #inButton {
-        padding: 12px 24px;
-        font-size: 18px;
-        font-weight: bold;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-    #inButton:hover {
-        background-color: #45a049;
-    }
+    #inButton { background-color: #4CAF50; }
+    #inButton:hover { background-color: #45a049; }
+    #inTatCaButton { background-color: #2196F3; }
+    #inTatCaButton:hover { background-color: #1976D2; }
+    #themButton { background-color: #64B5F6; }
+    #themButton:hover { background-color: #42A5F5; }
+
     @media print {
-        body * { visibility: hidden; }
-        #hoaDon, #hoaDon * { visibility: visible; }
-        #hoaDon { position: absolute; top: 0; left: 0; width: 100%; }
+      body * { visibility: hidden; }
+      #hoaDon, #hoaDon * { visibility: visible; }
+      #hoaDon { position: absolute; top: 0; left: 0; width: 100%; }
     }
-
-#inTatCaButton {
-    padding: 12px 24px;
-    font-size: 18px;
-    font-weight: bold;
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-#inTatCaButton:hover {
-    background-color: #1976D2;
-}
-
-
-#themButton {
-    padding: 12px 24px;
-    font-size: 18px;
-    font-weight: bold;
-    background-color: #64B5F6;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-#themButton:hover {
-    background-color: #42A5F5;
-}
-
-</style>
+  </style>
 </head>
 <body>
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-    <h2>Thu tiền điện</h2>
-    <div class="row">
-        <button onclick="document.getElementById('fileInput').click()" type="button">Đẩy dữ liệu</button>
-        <input accept=".xlsx" id="fileInput" onchange="docFileExcel(event)" style="display:none" type="file"/>
-    </div>
-</div>
+
+<h2>Thu tiền điện</h2>
 
 <div class="input-group">
   <label>Người thu tiền</label>
   <input id="nguoiThuTien" placeholder="Nhập tên người thu"/>
 </div>
+
 <div class="input-group">
   <label>Mã khách hàng</label>
   <input id="maKH" list="danhSachKH" onkeydown="if(event.key==='Enter'){timKiemMaKH()}" placeholder="(mục tìm kiếm)"/>
   <datalist id="danhSachKH"></datalist>
-  <button onclick="timKiemMaKH()" type="button">🔍</button>
+  <button onclick="timKiemMaKH()">🔍</button>
 </div>
+
 <div class="input-group">
   <label>Số tiền</label>
   <input id="soTien" readonly/>
@@ -119,25 +64,18 @@
   <input id="tenKH" readonly/>
 </div>
 
-
-
-<div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
-  <button id="themButton" onclick="themVaoDanhSach()">➕ Thêm vào danh sách</button>
-  <button id="inTatCaButton" onclick="inTatCaHoaDon()">🖨️ In tất cả</button>
-</div>
-
-
+<button id="themButton" onclick="themVaoDanhSach()">➕ Thêm vào danh sách</button>
+<button id="inTatCaButton" onclick="inTatCaHoaDon()">🖨️ In tất cả</button>
 
 <h3>Danh sách hóa đơn đã chọn</h3>
-<ul id="danhSachHoaDon" style="padding-left: 20px;"></ul>
+<ul id="danhSachHoaDon"></ul>
 <p><strong>Tổng tiền tất cả hóa đơn: <span id="tongTienTatCa">0 ₫</span></strong></p>
 
-
-<div style="display:flex; gap:10px; align-items:flex-start; margin-top:10px;">
+<div style="display:flex; gap:10px;">
   <div style="flex:1;">
     <div id="hoaDon">[Hóa đơn sẽ hiển thị tại đây]</div>
   </div>
-  <div style="display:flex; flex-direction:column; gap:10px;">
+  <div style="display:flex; flex-direction:column;">
     <button id="inButton" onclick="inHoaDon()">In</button>
     <label><b>Lịch sử thu</b></label>
     <textarea id="lichSuThu" readonly></textarea>
@@ -145,16 +83,16 @@
   </div>
 </div>
 
-<div class="row">
-  <div style="flex: 1;">
-    <label>Lịch sử in</label><br/>
-    <textarea id="lichSuIn" readonly></textarea><br/>
-    <button onclick="xuatLichSu('in')" type="button">Xuất lịch sử</button>
-  </div>
+<div>
+  <label><b>Lịch sử in</b></label><br/>
+  <textarea id="lichSuIn" readonly></textarea><br/>
+  <button onclick="xuatLichSu('in')">Xuất lịch sử</button>
 </div>
 
-<button onclick="xuatLichSuExcel()" type="button">Xuất Excel</button>
-<button onclick="xoaLichSu()" type="button">🗑️ Xóa lịch sử</button>
+<button onclick="xuatLichSuExcel()">Xuất Excel</button>
+<button onclick="xoaLichSu()">🗑️ Xóa lịch sử</button>
+<input type="file" id="fileInput" accept=".xlsx" onchange="docFileExcel(event)" style="display:none"/>
+<button onclick="document.getElementById('fileInput').click()">Đẩy dữ liệu</button>
 
 <script>
 let duLieu = [];
@@ -282,15 +220,9 @@ function inTatCaHoaDon() {
 
   const printArea = document.createElement("div");
   printArea.innerHTML = html;
-  printArea.style.display = "none";  // tránh hiển thị ra giao diện chính
-
-  document.body.appendChild(printArea);
-
-  const originalContent = document.body.innerHTML;
   document.body.innerHTML = printArea.innerHTML;
   window.print();
-  document.body.innerHTML = originalContent;
-  location.reload(); // tải lại trang sau khi in xong để khôi phục lại UI
+  location.reload();
 }
 
 function capNhatLichSu() {
@@ -310,11 +242,21 @@ function xuatLichSu(loai) {
   a.click();
 }
 
+// ✅ HÀM MỚI: xuất 2 file excel riêng biệt
 function xuatLichSuExcel() {
-  const ws = XLSX.utils.json_to_sheet([...lichSuIn.map(e => ({ ...e, Loai: 'In' })), ...lichSuThu.map(e => ({ ...e, Loai: 'Thu' }))]);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Lịch Sử");
-  XLSX.writeFile(wb, "lich_su.xlsx");
+  if (lichSuIn.length > 0) {
+    const wsIn = XLSX.utils.json_to_sheet(lichSuIn.map(e => ({ ...e, Loai: 'In' })));
+    const wbIn = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wbIn, wsIn, "Lịch Sử In");
+    XLSX.writeFile(wbIn, "lich_su_in.xlsx");
+  }
+
+  if (lichSuThu.length > 0) {
+    const wsThu = XLSX.utils.json_to_sheet(lichSuThu.map(e => ({ ...e, Loai: 'Thu' })));
+    const wbThu = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wbThu, wsThu, "Lịch Sử Thu");
+    XLSX.writeFile(wbThu, "lich_su_thu.xlsx");
+  }
 }
 
 function docFileExcel(event) {
