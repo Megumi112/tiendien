@@ -5,33 +5,38 @@
   <title>Thu tiền điện</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; max-width: 800px; margin:auto; padding:20px; border-radius:10px; }
-    input, button, textarea { margin: 5px; padding: 5px; font-size: 14px; }
+    body { font-family: Arial, sans-serif; margin: 20px auto; background: #f0f0f0; max-width: 800px; padding: 20px; border-radius: 10px; }
+    input, button, textarea { margin: 5px 0; padding: 8px; font-size: 14px; }
     .input-group { display: flex; align-items: center; margin-bottom: 10px; }
     .input-group label { width: 150px; font-weight: bold; }
     .input-group input { flex: 1; }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    #themButton { background-color: #64B5F6; }
+    #inButton { background-color: #4CAF50; }
+    #inTatCaButton { background-color: #2196F3; }
+    #xuatButton { background-color: #FF9800; }
+    #xoaButton { background-color: #f44336; }
     #hoaDon {
-      width: 400px; min-height: 250px; border: 2px solid black;
-      padding: 15px; white-space: normal; font-size: 18px;
-      font-family: 'Times New Roman', serif; line-height: 1.2;
+      width: 100%;
+      min-height: 250px;
+      border: 2px solid black;
+      padding: 15px;
+      font-size: 16px;
+      background: white;
+      line-height: 1.4;
+      font-family: 'Times New Roman', serif;
     }
     #hoaDon p { margin: 0; }
-    #lichSuIn, #lichSuThu {
-      width: 100%; height: 120px; font-size: 14px;
-      white-space: nowrap; overflow-x: auto;
-    }
-    #inButton, #inTatCaButton, #themButton {
-      padding: 12px 24px; font-size: 18px; font-weight: bold;
-      border: none; border-radius: 6px; cursor: pointer;
-      color: white;
-    }
-    #inButton { background-color: #4CAF50; }
-    #inButton:hover { background-color: #45a049; }
-    #inTatCaButton { background-color: #2196F3; }
-    #inTatCaButton:hover { background-color: #1976D2; }
-    #themButton { background-color: #64B5F6; }
-    #themButton:hover { background-color: #42A5F5; }
-
+    textarea { width: 100%; height: 100px; resize: vertical; }
     @media print {
       body * { visibility: hidden; }
       #hoaDon, #hoaDon * { visibility: visible; }
@@ -43,6 +48,13 @@
 
 <h2>Thu tiền điện</h2>
 
+<!-- Đẩy dữ liệu -->
+<div>
+  <button onclick="document.getElementById('fileInput').click()">📥 Đẩy dữ liệu từ Excel</button>
+  <input type="file" id="fileInput" accept=".xlsx" onchange="docFileExcel(event)" style="display:none"/>
+</div>
+
+<!-- Nhập và tìm khách hàng -->
 <div class="input-group">
   <label>Người thu tiền</label>
   <input id="nguoiThuTien" placeholder="Nhập tên người thu"/>
@@ -50,7 +62,7 @@
 
 <div class="input-group">
   <label>Mã khách hàng</label>
-  <input id="maKH" list="danhSachKH" onkeydown="if(event.key==='Enter'){timKiemMaKH()}" placeholder="(mục tìm kiếm)"/>
+  <input id="maKH" list="danhSachKH" onkeydown="if(event.key==='Enter'){timKiemMaKH()}" placeholder="Nhập mã KH"/>
   <datalist id="danhSachKH"></datalist>
   <button onclick="timKiemMaKH()">🔍</button>
 </div>
@@ -64,6 +76,7 @@
   <input id="tenKH" readonly/>
 </div>
 
+<!-- Nút xử lý -->
 <button id="themButton" onclick="themVaoDanhSach()">➕ Thêm vào danh sách</button>
 <button id="inTatCaButton" onclick="inTatCaHoaDon()">🖨️ In tất cả</button>
 
@@ -71,28 +84,30 @@
 <ul id="danhSachHoaDon"></ul>
 <p><strong>Tổng tiền tất cả hóa đơn: <span id="tongTienTatCa">0 ₫</span></strong></p>
 
-<div style="display:flex; gap:10px;">
-  <div style="flex:1;">
-    <div id="hoaDon">[Hóa đơn sẽ hiển thị tại đây]</div>
-  </div>
-  <div style="display:flex; flex-direction:column;">
-    <button id="inButton" onclick="inHoaDon()">In</button>
-    <label><b>Lịch sử thu</b></label>
-    <textarea id="lichSuThu" readonly></textarea>
-    <button onclick="xuatLichSu('thu')">Xuất lịch sử</button>
-  </div>
+<div>
+  <div id="hoaDon">[Hóa đơn sẽ hiển thị tại đây]</div>
+</div>
+
+<!-- In đơn lẻ -->
+<button id="inButton" onclick="inHoaDon()">🖨️ In hóa đơn hiện tại</button>
+
+<!-- Lịch sử -->
+<h3>Lịch sử giao dịch</h3>
+<div>
+  <label><b>Lịch sử thu:</b></label>
+  <textarea id="lichSuThu" readonly></textarea>
+  <button onclick="xuatLichSu('thu')">📄 Xuất TXT Thu</button>
 </div>
 
 <div>
-  <label><b>Lịch sử in</b></label><br/>
-  <textarea id="lichSuIn" readonly></textarea><br/>
-  <button onclick="xuatLichSu('in')">Xuất lịch sử</button>
+  <label><b>Lịch sử in:</b></label>
+  <textarea id="lichSuIn" readonly></textarea>
+  <button onclick="xuatLichSu('in')">📄 Xuất TXT In</button>
 </div>
 
-<button onclick="xuatLichSuExcel()">Xuất Excel</button>
-<button onclick="xoaLichSu()">🗑️ Xóa lịch sử</button>
-<input type="file" id="fileInput" accept=".xlsx" onchange="docFileExcel(event)" style="display:none"/>
-<button onclick="document.getElementById('fileInput').click()">Đẩy dữ liệu</button>
+<!-- Xuất & Xóa -->
+<button id="xuatButton" onclick="xuatLichSuExcel()">📤 Xuất Excel (2 sheet)</button>
+<button id="xoaButton" onclick="xoaLichSu()">🗑️ Xóa toàn bộ lịch sử</button>
 
 <script>
 let duLieu = [];
@@ -102,6 +117,28 @@ let hoaDonDaChon = [];
 
 function formatVND(number) {
   return Number(number).toLocaleString('vi-VN') + ' ₫';
+}
+
+function docFileExcel(event) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    duLieu = XLSX.utils.sheet_to_json(sheet);
+
+    const dataList = document.getElementById("danhSachKH");
+    dataList.innerHTML = "";
+    duLieu.forEach(row => {
+      const option = document.createElement("option");
+      option.value = row.MA_KHTT;
+      dataList.appendChild(option);
+    });
+
+    alert("Đẩy dữ liệu thành công!");
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 function timKiemMaKH() {
@@ -131,7 +168,7 @@ function hienThiHoaDon(maKH, tenKH, soTien) {
   const gio = now.toTimeString().split(' ')[0];
   const thoiGian = `Ngày ${ngay}, Giờ ${gio}`;
   const noiDung = `
-    <div style="text-align:center; font-weight:bold;">BIÊN LAI NHẬN TIỀN CHUYỂN KHOẢN</div>
+    <div style="text-align:center; font-weight:bold;">BIÊN LAI NHẬN TIỀN</div>
     <p>Mã KH: ${maKH}</p>
     <p>Tên KH: ${tenKH}</p>
     <p>Số Tiền: ${formatVND(soTien)}</p>
@@ -197,8 +234,8 @@ function inTatCaHoaDon() {
     const thoiGian = `Ngày ${ngay}, Giờ ${gio}`;
 
     html += `
-      <div style="page-break-after: always; padding-bottom:20px;">
-        <div style="text-align:center; font-weight:bold;">BIÊN LAI NHẬN TIỀN CHUYỂN KHOẢN</div>
+      <div style="page-break-after: always;">
+        <div style="text-align:center; font-weight:bold;">BIÊN LAI NHẬN TIỀN</div>
         <p>Mã KH: ${kh.MA_KHTT}</p>
         <p>Tên KH: ${kh.TEN_KHTT}</p>
         <p>Số Tiền: ${formatVND(kh.TONG_NOP)}</p>
@@ -226,10 +263,8 @@ function inTatCaHoaDon() {
 }
 
 function capNhatLichSu() {
-  const inText = lichSuIn.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\n");
-  const thuText = lichSuThu.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\n");
-  document.getElementById("lichSuIn").value = inText;
-  document.getElementById("lichSuThu").value = thuText;
+  document.getElementById("lichSuIn").value = lichSuIn.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\n");
+  document.getElementById("lichSuThu").value = lichSuThu.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\n");
 }
 
 function xuatLichSu(loai) {
@@ -242,42 +277,21 @@ function xuatLichSu(loai) {
   a.click();
 }
 
-// ✅ HÀM MỚI: xuất 2 file excel riêng biệt
+// ✅ Xuất Excel gồm 2 sheet: In & Thu
 function xuatLichSuExcel() {
-  if (lichSuIn.length > 0) {
-    const wsIn = XLSX.utils.json_to_sheet(lichSuIn.map(e => ({ ...e, Loai: 'In' })));
-    const wbIn = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wbIn, wsIn, "Lịch Sử In");
-    XLSX.writeFile(wbIn, "lich_su_in.xlsx");
-  }
+  const wb = XLSX.utils.book_new();
 
-  if (lichSuThu.length > 0) {
-    const wsThu = XLSX.utils.json_to_sheet(lichSuThu.map(e => ({ ...e, Loai: 'Thu' })));
-    const wbThu = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wbThu, wsThu, "Lịch Sử Thu");
-    XLSX.writeFile(wbThu, "lich_su_thu.xlsx");
-  }
-}
+  const wsIn = XLSX.utils.json_to_sheet(lichSuIn.map(e => ({
+    "Mã KH": e.maKH, "Tên KH": e.tenKH, "Số Tiền": e.soTien, "Thời Gian": e.thoiGian
+  })));
+  XLSX.utils.book_append_sheet(wb, wsIn, "Lịch Sử In");
 
-function docFileExcel(event) {
-  const file = event.target.files[0];
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const data = new Uint8Array(e.target.result);
-    const workbook = XLSX.read(data, { type: "array" });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    duLieu = XLSX.utils.sheet_to_json(sheet);
-    const dataList = document.getElementById("danhSachKH");
-    dataList.innerHTML = "";
-    duLieu.forEach(row => {
-      const option = document.createElement("option");
-      option.value = row.MA_KHTT;
-      dataList.appendChild(option);
-    });
-    alert("Đẩy dữ liệu thành công!");
-  };
-  reader.readAsArrayBuffer(file);
+  const wsThu = XLSX.utils.json_to_sheet(lichSuThu.map(e => ({
+    "Mã KH": e.maKH, "Tên KH": e.tenKH, "Số Tiền": e.soTien, "Thời Gian": e.thoiGian
+  })));
+  XLSX.utils.book_append_sheet(wb, wsThu, "Lịch Sử Thu");
+
+  XLSX.writeFile(wb, "lich_su.xlsx");
 }
 
 function xoaLichSu() {
