@@ -290,7 +290,6 @@ function inTatCaHoaDon() {
   document.body.innerHTML = printArea.innerHTML;
   window.print();
   document.body.innerHTML = originalContent;
-  location.reload(); // tải lại trang sau khi in xong để khôi phục lại UI
 }
 
 function capNhatLichSu() {
@@ -311,12 +310,16 @@ function xuatLichSu(loai) {
 }
 
 function xuatLichSuExcel() {
-  const ws = XLSX.utils.json_to_sheet([...lichSuIn.map(e => ({ ...e, Loai: 'In' })), ...lichSuThu.map(e => ({ ...e, Loai: 'Thu' }))]);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Lịch Sử");
+
+  const wsIn = XLSX.utils.json_to_sheet(lichSuIn);
+  XLSX.utils.book_append_sheet(wb, wsIn, "Lịch Sử In");
+
+  const wsThu = XLSX.utils.json_to_sheet(lichSuThu);
+  XLSX.utils.book_append_sheet(wb, wsThu, "Lịch Sử Thu");
+
   XLSX.writeFile(wb, "lich_su.xlsx");
 }
-
 function docFileExcel(event) {
   const file = event.target.files[0];
   const reader = new FileReader();
