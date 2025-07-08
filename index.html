@@ -1,75 +1,56 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="utf-8"/>
-<title>Thu tiền điện</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
+  <meta charset="utf-8"/>
+  <title>Thu tiền điện</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; max-width: 800px; margin:auto; padding:20px; border-radius:10px; }
     input, button, textarea { margin: 5px; padding: 5px; font-size: 14px; }
     .input-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
     }
     .input-group label {
-        width: 150px;
-        font-weight: bold;
+      width: 150px;
+      font-weight: bold;
     }
     .input-group input {
-        flex: 1;
+      flex: 1;
     }
     #hoaDon {
-        width: 400px;
-        min-height: 250px;
-        border: 2px solid black;
-        padding: 15px;
-        white-space: normal;
-        font-size: 18px;
-        font-family: 'Times New Roman', serif;
-        line-height: 1.2;
+      width: 400px;
+      min-height: 250px;
+      border: 2px solid black;
+      padding: 15px;
+      white-space: normal;
+      font-size: 18px;
+      font-family: 'Times New Roman', serif;
+      line-height: 1.2;
     }
     #hoaDon p { margin: 0; }
-    #lichSuIn {
-        width: 100%;
-        height: 120px;
-        font-size: 14px;
-        white-space: nowrap;
-        overflow-x: auto;
-    }
-    #lichSuThu {
-        width: 250px;
-        height: 150px;
-    }
+    #lichSuIn { width: 100%; height: 120px; font-size: 14px; white-space: nowrap; overflow-x: auto; }
+    #lichSuThu { width: 250px; height: 150px; }
     #inButton {
-        padding: 12px 24px;
-        font-size: 18px;
-        font-weight: bold;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
+      padding: 12px 24px; font-size: 18px; font-weight: bold;
+      background-color: #4CAF50; color: white; border: none; border-radius: 6px; cursor: pointer;
     }
-    #inButton:hover {
-        background-color: #45a049;
-    }
+    #inButton:hover { background-color: #45a049; }
     @media print {
-        body * { visibility: hidden; }
-        #hoaDon, #hoaDon * { visibility: visible; }
-        #hoaDon { position: absolute; top: 0; left: 0; width: 100%; }
+      body * { visibility: hidden; }
+      #hoaDon, #hoaDon * { visibility: visible; }
+      #hoaDon { position: absolute; top: 0; left: 0; width: 100%; }
     }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  </style>
 </head>
 <body>
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-    <h2>Thu tiền điện</h2>
-    <div class="row">
-        <button onclick="document.getElementById('fileInput').click()" type="button">Đẩy dữ liệu</button>
-        <input accept=".xlsx" id="fileInput" onchange="docFileExcel(event)" style="display:none" type="file"/>
-    </div>
+
+<h2>Thu tiền điện</h2>
+<div class="row">
+  <button onclick="document.getElementById('fileInput').click()">Đẩy dữ liệu</button>
+  <input type="file" id="fileInput" accept=".xlsx" style="display:none" onchange="docFileExcel(event)" />
 </div>
 
 <div class="input-group">
@@ -80,7 +61,7 @@
   <label>Mã khách hàng</label>
   <input id="maKH" list="danhSachKH" onkeydown="if(event.key==='Enter'){timKiemMaKH()}" placeholder="(mục tìm kiếm)"/>
   <datalist id="danhSachKH"></datalist>
-  <button onclick="timKiemMaKH()" type="button">🔍</button>
+  <button onclick="timKiemMaKH()">🔍</button>
 </div>
 <div class="input-group">
   <label>Số tiền</label>
@@ -104,15 +85,13 @@
 </div>
 
 <div class="row">
-  <div style="flex: 1;">
-    <label>Lịch sử in</label><br/>
-    <textarea id="lichSuIn" readonly></textarea><br/>
-    <button onclick="xuatLichSu('in')" type="button">Xuất lịch sử</button>
-  </div>
+  <label>Lịch sử in</label><br/>
+  <textarea id="lichSuIn" readonly></textarea><br/>
+  <button onclick="xuatLichSu('in')">Xuất lịch sử</button>
 </div>
 
-<button onclick="xuatLichSuExcel()" type="button">Xuất Excel</button>
-<button onclick="xoaLichSu()" type="button">🗑️ Xóa lịch sử</button>
+<button onclick="xuatLichSuExcel()">Xuất Excel</button>
+<button onclick="xoaLichSu()">🗑️ Xóa lịch sử</button>
 
 <script>
 let duLieu = [];
@@ -131,7 +110,6 @@ function timKiemMaKH() {
     document.getElementById("soTien").value = kh.TONG_NOP;
     hienThiHoaDon(kh.MA_KHTT, kh.TEN_KHTT, kh.TONG_NOP);
 
-    // Ghi lại vào lịch sử thu
     const soTien = Number(kh.TONG_NOP) + 2000;
     const thoiGian = new Date().toLocaleString();
     lichSuThu.push({ maKH: kh.MA_KHTT, tenKH: kh.TEN_KHTT, soTien, thoiGian });
@@ -141,7 +119,6 @@ function timKiemMaKH() {
     document.getElementById("hoaDon").innerText = "[Không tìm thấy khách hàng]";
   }
 }
-
 
 function hienThiHoaDon(maKH, tenKH, soTien) {
   const nguoiThu = document.getElementById("nguoiThuTien").value || "-";
@@ -165,17 +142,17 @@ function hienThiHoaDon(maKH, tenKH, soTien) {
   `;
   document.getElementById("hoaDon").innerHTML = noiDung.trim();
 
-  // Tạo mã QR theo chuẩn EVN
-  const qrData = maKH;
-  const qrContainer = document.getElementById("maQR");
-  qrContainer.innerHTML = ""; // Xóa QR cũ
-  new QRCode(qrContainer, {
-    text: qrData,
-    width: 100,
-    height: 100
+  // Tạo mã vạch
+  const barcodeContainer = document.getElementById("maQR");
+  barcodeContainer.innerHTML = '<svg id="barcode"></svg>';
+  JsBarcode("#barcode", maKH, {
+    format: "CODE128",
+    lineColor: "#000",
+    width: 2,
+    height: 60,
+    displayValue: true
   });
 }
-
 
 function inHoaDon() {
   const maKH = document.getElementById("maKH").value;
@@ -189,15 +166,15 @@ function inHoaDon() {
 }
 
 function capNhatLichSu() {
-  const inText = lichSuIn.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\n");
-  const thuText = lichSuThu.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\n");
+  const inText = lichSuIn.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\\n");
+  const thuText = lichSuThu.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\\n");
   document.getElementById("lichSuIn").value = inText;
   document.getElementById("lichSuThu").value = thuText;
 }
 
 function xuatLichSu(loai) {
   const duLieu = loai === 'in' ? lichSuIn : lichSuThu;
-  const text = duLieu.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${item.soTien}`).join("\n");
+  const text = duLieu.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${item.soTien}`).join("\\n");
   const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -207,13 +184,10 @@ function xuatLichSu(loai) {
 
 function xuatLichSuExcel() {
   const wb = XLSX.utils.book_new();
-
   const wsIn = XLSX.utils.json_to_sheet(lichSuIn);
   XLSX.utils.book_append_sheet(wb, wsIn, "Lịch Sử In");
-
   const wsThu = XLSX.utils.json_to_sheet(lichSuThu);
   XLSX.utils.book_append_sheet(wb, wsThu, "Lịch Sử Thu");
-
   XLSX.writeFile(wb, "lich_su.xlsx");
 }
 
@@ -223,8 +197,7 @@ function docFileExcel(event) {
   reader.onload = (e) => {
     const data = new Uint8Array(e.target.result);
     const workbook = XLSX.read(data, { type: "array" });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
     duLieu = XLSX.utils.sheet_to_json(sheet);
     const dataList = document.getElementById("danhSachKH");
     dataList.innerHTML = "";
