@@ -144,15 +144,15 @@ function hienThiHoaDon(maKH, tenKH, soTien) {
 
   // Tạo mã vạch
   const barcodeContainer = document.getElementById("maQR");
-  barcodeContainer.innerHTML = '<svg id="barcode"></svg>';
-  JsBarcode("#barcode", maKH, {
+barcodeContainer.innerHTML = '<svg id="barcode"></svg>';
+JsBarcode("#barcode", maKH, {
     format: "CODE128",
     lineColor: "#000",
-    width: 2,
-    height: 60,
-    displayValue: true
-  });
-}
+    width: 1.5,       // nhỏ hơn mặc định (2)
+    height: 40,       // thấp hơn mặc định (60)
+    displayValue: true,
+    fontSize: 12      // chữ số bên dưới nhỏ hơn
+});
 
 function inHoaDon() {
   const maKH = document.getElementById("maKH").value;
