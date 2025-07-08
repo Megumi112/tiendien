@@ -170,9 +170,9 @@ function hienThiHoaDon(maKH, tenKH, soTien) {
   const qrContainer = document.getElementById("maQR");
   qrContainer.innerHTML = ""; // Xóa QR cũ
   new QRCode(qrContainer, {
-      text: qrData,
-      width: 100,
-      height: 100
+    text: qrData,
+    width: 100,
+    height: 100
   });
 }
 
