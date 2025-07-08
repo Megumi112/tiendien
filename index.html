@@ -166,12 +166,16 @@ function hienThiHoaDon(maKH, tenKH, soTien) {
   document.getElementById("hoaDon").innerHTML = noiDung.trim();
 
   // Tạo mã QR theo chuẩn EVN
-const qrData = taoQR_EMVCo(maKH, soTien);
-new QRCode(document.getElementById("maQR"), {
-  text: qrData,
-  width: 120,
-  height: 120
-});
+  const qrData = maKH;
+  const qrContainer = document.getElementById("maQR");
+  qrContainer.innerHTML = ""; // Xóa QR cũ
+  new QRCode(qrContainer, {
+      text: qrData,
+      width: 100,
+      height: 100
+  });
+}
+
 
 function inHoaDon() {
   const maKH = document.getElementById("maKH").value;
@@ -245,85 +249,6 @@ function xoaLichSu() {
 }
 
 window.onload = capNhatLichSu;
-    // Hàm tính CRC16-CCITT (EMVCo yêu cầu)
-function crc16ccitt(str) {
-    const crcTable = [
-        0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7,
-        0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF
-    ];
-    let crc = 0xFFFF;
-    for (let i = 0; i < str.length; i++) {
-        let c = str.charCodeAt(i);
-        let da = ((crc >> 12) & 0xF) ^ (c >> 4);
-        crc = (crc << 4) ^ crcTable[da & 0xF];
-        crc &= 0xFFFF;
-        da = ((crc >> 12) & 0xF) ^ (c & 0xF);
-        crc = (crc << 4) ^ crcTable[da & 0xF];
-        crc &= 0xFFFF;
-    }
-    return crc.toString(16).toUpperCase().padStart(4, "0");
-}
-
-// Hàm tạo mã QR thanh toán VietQR chuẩn EMVCo
-function taoQR_EMVCo(maKH, soTien) {
-    const account = "11900168961";
-    const bankCode = "970415"; // VietinBank (theo NAPAS)
-    const merchantName = "EVN";
-    const merchantCity = "HANOI";
-    const currencyCode = "704"; // VND
-    const description = `Thanh toan tien dien MAKH: ${maKH}`;
-    const amount = Number(soTien).toFixed(0);
-
-    function formatTag(id, value) {
-        const len = value.length.toString().padStart(2, '0');
-        return id + len + value;
-    }
-
-    const guiID = formatTag("00", "A000000727");
-    const acquirerID = formatTag("01", bankCode);
-    const accountInfo = formatTag("38", guiID + acquirerID + formatTag("02", account));
-
-    const payload =
-        formatTag("00", "01") +
-        formatTag("01", "12") +  // QR động
-        accountInfo +
-        formatTag("52", "0000") +  // Merchant Category Code
-        formatTag("53", currencyCode) +
-        formatTag("54", amount) +
-        formatTag("58", "VN") +
-        formatTag("59", merchantName) +
-        formatTag("60", merchantCity) +
-        formatTag("62", formatTag("01", description));
-
-    const fullPayload = payload + "6304";
-    const crc = crc16ccitt(fullPayload);
-    return fullPayload + crc;
-}
-
-<script>
-function taoQRVietQR(maKH, soTien) {
-  const stk = "11900168961";
-  const bic = "ICBVVNVX";
-  const noiDung = `Thanh toan tien dien MAKH: ${maKH}`;
-  const tongTien = Math.floor(soTien); // Loại bỏ phí 2000
-
-  // EMVCo base fields
-  const payloadFormat = "000201";
-  const initMethod = "010212";
-  const merchantAccount = "38" +
-    "0010A000000727" +
-    "0113" + bic +
-    "0208" + stk;
-  const mcc = "520483";           // Loại hình dịch vụ
-  const currency = "5303704";     // VND
-  const amount = "54" + tongTien.toString().length.toString().padStart(2, "0") + tongTien;
-  const country = "5802VN";
-  const addInfo = "62" + (18 + noiDung.length).toString().padStart(2, "0") + "0012" + noiDung;
-  const crc = "6304"; // CRC placeholder
-
-  return payloadFormat + initMethod + merchantAccount + mcc + currency + amount + country + addInfo + crc;
-}
 </script>
-
 </body>
 </html>
