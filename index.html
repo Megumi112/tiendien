@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -59,37 +60,8 @@
         #hoaDon, #hoaDon * { visibility: visible; }
         #hoaDon { position: absolute; top: 0; left: 0; width: 100%; }
     }
-
-#inTatCaButton {
-    padding: 12px 24px;
-    font-size: 18px;
-    font-weight: bold;
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-#inTatCaButton:hover {
-    background-color: #1976D2;
-}
-
-
-#themButton {
-    padding: 12px 24px;
-    font-size: 18px;
-    font-weight: bold;
-    background-color: #64B5F6;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-#themButton:hover {
-    background-color: #42A5F5;
-}
-
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
@@ -119,20 +91,6 @@
   <input id="tenKH" readonly/>
 </div>
 
-
-
-<div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
-  <button id="themButton" onclick="themVaoDanhSach()">➕ Thêm vào danh sách</button>
-  <button id="inTatCaButton" onclick="inTatCaHoaDon()">🖨️ In tất cả</button>
-</div>
-
-
-
-<h3>Danh sách hóa đơn đã chọn</h3>
-<ul id="danhSachHoaDon" style="padding-left: 20px;"></ul>
-<p><strong>Tổng tiền tất cả hóa đơn: <span id="tongTienTatCa">0 ₫</span></strong></p>
-
-
 <div style="display:flex; gap:10px; align-items:flex-start; margin-top:10px;">
   <div style="flex:1;">
     <div id="hoaDon">[Hóa đơn sẽ hiển thị tại đây]</div>
@@ -160,7 +118,6 @@
 let duLieu = [];
 let lichSuIn = JSON.parse(localStorage.getItem("lichSuIn")) || [];
 let lichSuThu = JSON.parse(localStorage.getItem("lichSuThu")) || [];
-let hoaDonDaChon = [];
 
 function formatVND(number) {
   return Number(number).toLocaleString('vi-VN') + ' ₫';
@@ -174,6 +131,7 @@ function timKiemMaKH() {
     document.getElementById("soTien").value = kh.TONG_NOP;
     hienThiHoaDon(kh.MA_KHTT, kh.TEN_KHTT, kh.TONG_NOP);
 
+    // Ghi lại vào lịch sử thu
     const soTien = Number(kh.TONG_NOP) + 2000;
     const thoiGian = new Date().toLocaleString();
     lichSuThu.push({ maKH: kh.MA_KHTT, tenKH: kh.TEN_KHTT, soTien, thoiGian });
@@ -183,6 +141,7 @@ function timKiemMaKH() {
     document.getElementById("hoaDon").innerText = "[Không tìm thấy khách hàng]";
   }
 }
+
 
 function hienThiHoaDon(maKH, tenKH, soTien) {
   const nguoiThu = document.getElementById("nguoiThuTien").value || "-";
@@ -202,9 +161,21 @@ function hienThiHoaDon(maKH, tenKH, soTien) {
     <p>Người thu tiền: ${nguoiThu}</p>
     <div style="text-align:center; font-weight:bold;">ĐÃ NHẬN TIỀN</div>
     <p>${thoiGian}</p>
+    <div id="maQR" style="text-align:center; margin-top:10px;"></div>
   `;
   document.getElementById("hoaDon").innerHTML = noiDung.trim();
+
+  // Tạo mã QR theo chuẩn EVN
+  const qrData = maKH;
+  const qrContainer = document.getElementById("maQR");
+  qrContainer.innerHTML = ""; // Xóa QR cũ
+  new QRCode(qrContainer, {
+      text: qrData,
+      width: 100,
+      height: 100
+  });
 }
+
 
 function inHoaDon() {
   const maKH = document.getElementById("maKH").value;
@@ -215,81 +186,6 @@ function inHoaDon() {
   localStorage.setItem("lichSuIn", JSON.stringify(lichSuIn));
   capNhatLichSu();
   setTimeout(() => { window.print(); }, 0);
-}
-
-function themVaoDanhSach() {
-  const maKH = document.getElementById("maKH").value.trim();
-  const kh = duLieu.find(row => row.MA_KHTT === maKH);
-  if (kh) {
-    hoaDonDaChon.push(kh);
-    capNhatDanhSachHoaDon();
-  } else {
-    alert("Không tìm thấy khách hàng.");
-  }
-}
-
-function capNhatDanhSachHoaDon() {
-  const ul = document.getElementById("danhSachHoaDon");
-  ul.innerHTML = "";
-  let tong = 0;
-  hoaDonDaChon.forEach(kh => {
-    const tongTien = Number(kh.TONG_NOP) + 2000;
-    tong += tongTien;
-    const li = document.createElement("li");
-    li.innerText = `${kh.MA_KHTT} - ${kh.TEN_KHTT} | Tổng: ${formatVND(tongTien)}`;
-    ul.appendChild(li);
-  });
-  document.getElementById("tongTienTatCa").innerText = formatVND(tong);
-}
-
-function inTatCaHoaDon() {
-  if (hoaDonDaChon.length === 0) {
-    alert("Chưa chọn hóa đơn nào.");
-    return;
-  }
-
-  let html = "";
-  hoaDonDaChon.forEach(kh => {
-    const nguoiThu = document.getElementById("nguoiThuTien").value || "-";
-    const phi = 2000;
-    const tong = Number(kh.TONG_NOP) + phi;
-    const now = new Date();
-    const ngay = now.toLocaleDateString('vi-VN');
-    const gio = now.toTimeString().split(' ')[0];
-    const thoiGian = `Ngày ${ngay}, Giờ ${gio}`;
-
-    html += `
-      <div style="page-break-after: always; padding-bottom:20px;">
-        <div style="text-align:center; font-weight:bold;">BIÊN LAI NHẬN TIỀN CHUYỂN KHOẢN</div>
-        <p>Mã KH: ${kh.MA_KHTT}</p>
-        <p>Tên KH: ${kh.TEN_KHTT}</p>
-        <p>Số Tiền: ${formatVND(kh.TONG_NOP)}</p>
-        <p>Phí: ${formatVND(phi)}</p>
-        <p>Tổng Tiền: ${formatVND(tong)}</p>
-        <p>Người thu tiền: ${nguoiThu}</p>
-        <div style="text-align:center; font-weight:bold;">ĐÃ NHẬN TIỀN</div>
-        <p>${thoiGian}</p>
-      </div>
-    `;
-
-    lichSuIn.push({ maKH: kh.MA_KHTT, tenKH: kh.TEN_KHTT, soTien: tong, thoiGian: ngay });
-    lichSuThu.push({ maKH: kh.MA_KHTT, tenKH: kh.TEN_KHTT, soTien: tong, thoiGian: ngay });
-  });
-
-  localStorage.setItem("lichSuIn", JSON.stringify(lichSuIn));
-  localStorage.setItem("lichSuThu", JSON.stringify(lichSuThu));
-  capNhatLichSu();
-
-  const printArea = document.createElement("div");
-  printArea.innerHTML = html;
-  printArea.style.display = "none";  // tránh hiển thị ra giao diện chính
-
-  document.body.appendChild(printArea);
-
-  const originalContent = document.body.innerHTML;
-  document.body.innerHTML = printArea.innerHTML;
-  window.print();
-  document.body.innerHTML = originalContent;
 }
 
 function capNhatLichSu() {
@@ -320,6 +216,7 @@ function xuatLichSuExcel() {
 
   XLSX.writeFile(wb, "lich_su.xlsx");
 }
+
 function docFileExcel(event) {
   const file = event.target.files[0];
   const reader = new FileReader();
