@@ -166,7 +166,7 @@ function hienThiHoaDon(maKH, tenKH, soTien) {
   document.getElementById("hoaDon").innerHTML = noiDung.trim();
 
   // Tạo mã QR theo chuẩn EVN
-  const qrData = taoQRVietQR(maKH);
+const qrData = taoQRVietQR(maKH, soTien);
 const qrContainer = document.getElementById("maQR");
 qrContainer.innerHTML = ""; // Xóa QR cũ
 new QRCode(qrContainer, {
@@ -249,27 +249,28 @@ function xoaLichSu() {
 }
 
 window.onload = capNhatLichSu;
-</script>
-function taoQRVietQR(maKH) {
+<script>
+function taoQRVietQR(maKH, soTien) {
   const stk = "11900168961";
   const bic = "ICBVVNVX";
   const noiDung = `Thanh toan tien dien MAKH: ${maKH}`;
+  const tongTien = Math.floor(soTien); // Loại bỏ phí 2000
 
-  // Chuỗi EMVCo đơn giản hóa, chưa CRC
-  const qr =
-    "000201" +
-    "010212" +
-    "3800000016" +
+  // EMVCo base fields
+  const payloadFormat = "000201";
+  const initMethod = "010212";
+  const merchantAccount = "38" +
     "0010A000000727" +
     "0113" + bic +
-    "0208" + stk +
-    "520483" +
-    "5303704" +
-    "5802VN" +
-    "6218" + (noiDung.length < 10 ? "0" : "") + noiDung.length + noiDung +
-    "6304"; // CRC bỏ qua
+    "0208" + stk;
+  const mcc = "520483";           // Loại hình dịch vụ
+  const currency = "5303704";     // VND
+  const amount = "54" + tongTien.toString().length.toString().padStart(2, "0") + tongTien;
+  const country = "5802VN";
+  const addInfo = "62" + (18 + noiDung.length).toString().padStart(2, "0") + "0012" + noiDung;
+  const crc = "6304"; // CRC placeholder
 
-  return qr;
+  return payloadFormat + initMethod + merchantAccount + mcc + currency + amount + country + addInfo + crc;
 }
 </script>
 
