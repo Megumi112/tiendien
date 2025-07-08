@@ -166,15 +166,15 @@ function hienThiHoaDon(maKH, tenKH, soTien) {
   document.getElementById("hoaDon").innerHTML = noiDung.trim();
 
   // Tạo mã QR theo chuẩn EVN
-  const qrData = maKH;
-  const qrContainer = document.getElementById("maQR");
-  qrContainer.innerHTML = ""; // Xóa QR cũ
-  new QRCode(qrContainer, {
-      text: qrData,
-      width: 100,
-      height: 100
-  });
-}
+  const qrData = taoQRVietQR(maKH);
+const qrContainer = document.getElementById("maQR");
+qrContainer.innerHTML = ""; // Xóa QR cũ
+new QRCode(qrContainer, {
+    text: qrData,
+    width: 120,
+    height: 120
+});
+
 
 
 function inHoaDon() {
@@ -250,5 +250,28 @@ function xoaLichSu() {
 
 window.onload = capNhatLichSu;
 </script>
+function taoQRVietQR(maKH) {
+  const stk = "11900168961";
+  const bic = "ICBVVNVX";
+  const noiDung = `Thanh toan tien dien MAKH: ${maKH}`;
+
+  // Chuỗi EMVCo đơn giản hóa, chưa CRC
+  const qr =
+    "000201" +
+    "010212" +
+    "3800000016" +
+    "0010A000000727" +
+    "0113" + bic +
+    "0208" + stk +
+    "520483" +
+    "5303704" +
+    "5802VN" +
+    "6218" + (noiDung.length < 10 ? "0" : "") + noiDung.length + noiDung +
+    "6304"; // CRC bỏ qua
+
+  return qr;
+}
+</script>
+
 </body>
 </html>
