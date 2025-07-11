@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <title>Thu tiền điện</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; max-width: 800px; margin:auto; padding:20px; border-radius:10px; }
     input, button, textarea { margin: 5px; padding: 5px; font-size: 14px; }
@@ -66,12 +66,12 @@
 
 <script>
 const bangGiaDien = [
-  { bac: 1, gia: 1984, sanLuongToiDa: 52 },
-  { bac: 2, gia: 2050, sanLuongToiDa: 52 },
-  { bac: 3, gia: 2380, sanLuongToiDa: 103 },
-  { bac: 4, gia: 2998, sanLuongToiDa: 103 },
-  { bac: 5, gia: 3350, sanLuongToiDa: 103 },
-  { bac: 6, gia: 3460, sanLuongToiDa: Infinity },
+  { sanLuong: 55, donGia: 1984 },
+  { sanLuong: 52, donGia: 2050 },
+  { sanLuong: 103, donGia: 2380 },
+  { sanLuong: 103, donGia: 2998 },
+  { sanLuong: 103, donGia: 3350 },
+  { sanLuong: 287, donGia: 3460 }
 ];
 
 function tinhSanLuongTuSoTien(soTien) {
@@ -79,14 +79,12 @@ function tinhSanLuongTuSoTien(soTien) {
   let tienConLai = soTien;
   for (let i = 0; i < bangGiaDien.length; i++) {
     const bac = bangGiaDien[i];
-    const sanLuongMax = bac.sanLuongToiDa;
-    const soLuongBac = sanLuongMax !== Infinity ? sanLuongMax : 9999999;
-    const tienBac = soLuongBac * bac.gia;
+    const tienBac = bac.sanLuong * bac.donGia;
     if (tienConLai >= tienBac) {
-      tongSanLuong += soLuongBac;
+      tongSanLuong += bac.sanLuong;
       tienConLai -= tienBac;
     } else {
-      const sanLuongConLai = Math.floor(tienConLai / bac.gia);
+      const sanLuongConLai = Math.floor(tienConLai / bac.donGia);
       tongSanLuong += sanLuongConLai;
       break;
     }
@@ -139,22 +137,83 @@ function hienThiHoaDon(maKH, tenKH, soTien, sanLuong) {
     <div id="maQR" style="text-align:center; margin-top:10px;"></div>
   `;
   document.getElementById("hoaDon").innerHTML = noiDung.trim();
+
   const barcodeContainer = document.getElementById("maQR");
-  barcodeContainer.innerHTML = '<svg id="barcode"></svg>';
-  JsBarcode("#barcode", maKH, { format: "CODE128", lineColor: "#000", width: 1.5, height: 40, displayValue: true, fontSize: 12 });
+  barcodeContainer.innerHTML = '';
+  new QRCode(barcodeContainer, {
+    text: maKH,
+    width: 100,
+    height: 100
+  });
 }
 
-function inHoaDon() { const maKH = document.getElementById("maKH").value; const tenKH = document.getElementById("tenKH").value; const soTien = Number(document.getElementById("soTien").value || 0); const sanLuong = tinhSanLuongTuSoTien(soTien); hienThiHoaDon(maKH, tenKH, soTien, sanLuong); lichSuIn.push({ maKH, tenKH, soTien: soTien + 2000, thoiGian: new Date().toLocaleDateString('vi-VN') }); localStorage.setItem("lichSuIn", JSON.stringify(lichSuIn)); capNhatLichSu(); setTimeout(() => { window.print(); }, 0); }
+function inHoaDon() {
+  const maKH = document.getElementById("maKH").value;
+  const tenKH = document.getElementById("tenKH").value;
+  const soTien = Number(document.getElementById("soTien").value || 0);
+  const sanLuong = tinhSanLuongTuSoTien(soTien);
+  hienThiHoaDon(maKH, tenKH, soTien, sanLuong);
+  lichSuIn.push({ maKH, tenKH, soTien: soTien + 2000, thoiGian: new Date().toLocaleDateString('vi-VN') });
+  localStorage.setItem("lichSuIn", JSON.stringify(lichSuIn));
+  capNhatLichSu();
+  setTimeout(() => { window.print(); }, 0);
+}
 
-function capNhatLichSu() { const inText = lichSuIn.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\n"); const thuText = lichSuThu.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\n"); document.getElementById("lichSuIn").value = inText; document.getElementById("lichSuThu").value = thuText; }
+function capNhatLichSu() {
+  const inText = lichSuIn.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\n");
+  const thuText = lichSuThu.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${formatVND(item.soTien)}`).join("\n");
+  document.getElementById("lichSuIn").value = inText;
+  document.getElementById("lichSuThu").value = thuText;
+}
 
-function xuatLichSu(loai) { const duLieu = loai === 'in' ? lichSuIn : lichSuThu; const text = duLieu.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${item.soTien}`).join("\n"); const blob = new Blob([text], { type: "text/plain;charset=utf-8" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `lich_su_${loai}.txt`; a.click(); }
+function xuatLichSu(loai) {
+  const duLieu = loai === 'in' ? lichSuIn : lichSuThu;
+  const text = duLieu.map(item => `(${item.thoiGian}) ${item.maKH} - ${item.tenKH}: ${item.soTien}`).join("\n");
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `lich_su_${loai}.txt`;
+  a.click();
+}
 
-function xuatLichSuExcel() { const wb = XLSX.utils.book_new(); const wsIn = XLSX.utils.json_to_sheet(lichSuIn); XLSX.utils.book_append_sheet(wb, wsIn, "Lịch Sử In"); const wsThu = XLSX.utils.json_to_sheet(lichSuThu); XLSX.utils.book_append_sheet(wb, wsThu, "Lịch Sử Thu"); XLSX.writeFile(wb, "lich_su.xlsx"); }
+function xuatLichSuExcel() {
+  const wb = XLSX.utils.book_new();
+  const wsIn = XLSX.utils.json_to_sheet(lichSuIn);
+  XLSX.utils.book_append_sheet(wb, wsIn, "Lịch Sử In");
+  const wsThu = XLSX.utils.json_to_sheet(lichSuThu);
+  XLSX.utils.book_append_sheet(wb, wsThu, "Lịch Sử Thu");
+  XLSX.writeFile(wb, "lich_su.xlsx");
+}
 
-function docFileExcel(event) { const file = event.target.files[0]; const reader = new FileReader(); reader.onload = (e) => { const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: "array" }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; duLieu = XLSX.utils.sheet_to_json(sheet); const dataList = document.getElementById("danhSachKH"); dataList.innerHTML = ""; duLieu.forEach(row => { const option = document.createElement("option"); option.value = row.MA_KHTT; dataList.appendChild(option); }); alert("Đẩy dữ liệu thành công!"); }; reader.readAsArrayBuffer(file); }
+function docFileExcel(event) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    duLieu = XLSX.utils.sheet_to_json(sheet);
+    const dataList = document.getElementById("danhSachKH");
+    dataList.innerHTML = "";
+    duLieu.forEach(row => {
+      const option = document.createElement("option");
+      option.value = row.MA_KHTT;
+      dataList.appendChild(option);
+    });
+    alert("Đẩy dữ liệu thành công!");
+  };
+  reader.readAsArrayBuffer(file);
+}
 
-function xoaLichSu() { if (confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử không?")) { localStorage.removeItem("lichSuIn"); localStorage.removeItem("lichSuThu"); lichSuIn = []; lichSuThu = []; capNhatLichSu(); } }
+function xoaLichSu() {
+  if (confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử không?")) {
+    localStorage.removeItem("lichSuIn");
+    localStorage.removeItem("lichSuThu");
+    lichSuIn = [];
+    lichSuThu = [];
+    capNhatLichSu();
+  }
+}
 window.onload = capNhatLichSu;
 </script>
 </body>
